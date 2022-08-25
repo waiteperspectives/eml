@@ -1,0 +1,12 @@
+[package]
+name = "eml"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yaml-rust = "0.4.5"
+linked-hash-map = "0.5.3" # [public dependency of yaml-rust](https://rust-lang.github.io/rfcs/1977-public-private-dependencies.html)
+
+uuid = { version= "1.1.2", features= ["v4", "fast-rng", "macro-diagnostics"] }
+
+[dev-dependencies]
