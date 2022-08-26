@@ -4,7 +4,19 @@
 
 DSLs and tooling for working with event models
 
+## eml
+
+`eml` is a command line tool for compiling the event modeling language dsl into
+a visual representation. The target output is svg, which scales well and plays
+nice with both web and standalone documents. The tool is written in Rust and
+leverages the [nom](https://github.com/Geal/nom) parser-combinator library for
+it's parser and [clap](https://github.com/clap-rs/clap) for the command line
+interface.
+
 ## emlyml
+
+`emlyml` compiles svg event models from a yaml-based dsl. This is the original
+Python project.
 
 ```
 usage: emlyml [-h] {compile,demo} ...
@@ -96,4 +108,4 @@ options:
 - =>: { begin_at: AddUser, end_at: UserAdded }
 ```
 
-Output: ![examples/model.svg](examples/model.svg)
+Output: ![examples/emlyml_python/model.svg](examples/emlyml_python/model.svg)
