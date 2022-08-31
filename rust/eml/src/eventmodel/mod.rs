@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 #[derive(Debug)]
 pub struct TextField {
     pub name: String,
@@ -19,19 +17,19 @@ pub enum Field {
 }
 
 #[derive(Debug)]
-pub struct ExpressionId(String);
+pub struct ExpressionId(pub String);
 
 #[derive(Debug)]
 pub enum Expression {
-    Form(Vec<Field>),
-    Job(Vec<Field>),
-    Command(Vec<Field>),
-    Event(Vec<Field>),
-    View(Vec<Field>),
-    Flow(Vec<ExpressionId>),
+    Form(ExpressionId, Vec<Field>),
+    Job(ExpressionId, Vec<Field>),
+    Command(ExpressionId, Vec<Field>),
+    Event(ExpressionId, Vec<Field>),
+    View(ExpressionId, Vec<Field>),
+    Flow(ExpressionId, Vec<ExpressionId>),
 }
 
 #[derive(Debug)]
 pub struct EventModel {
-    pub expressions: BTreeMap<ExpressionId, Expression>,
+    pub expressions: Vec<Expression>,
 }

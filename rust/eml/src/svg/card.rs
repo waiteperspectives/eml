@@ -89,9 +89,12 @@ impl Card {
             format!(
                 "\
             <text transform='translate({translate_x} {translate_y})' x='0' y='0'>\
+            <tspan x='0' dy='1rem'>{id}</tspan>\
+            <tspan x='0' dy='1rem'>==========</tspan>\
             {lines}\
             </text>\
             ",
+                id = self.id,
                 translate_x = self.text_translate.x,
                 translate_y = self.text_translate.y,
                 lines = lines

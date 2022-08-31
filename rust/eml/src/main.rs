@@ -1,8 +1,10 @@
 mod eventmodel;
+mod ingest;
 mod svg;
 mod utils;
 
-// use eventmodel::EventModel;
+use eventmodel::*;
+use ingest::*;
 use svg::*;
 use utils::newid;
 
@@ -15,33 +17,58 @@ fn demo() {
         arrows: Vec::new(),
         swimlane: Swimlane::new(),
     };
-    doc.cards.push(Card::new(
-        "form1".to_string(),
-        CardType::Form,
-        vec!["Test Form".to_string()],
-    ));
-    doc.cards.push(Card::new(
-        "cmd1".to_string(),
-        CardType::Command,
-        vec!["Test Cmd".to_string()],
-    ));
-    doc.arrows.push(Arrow::new(
-        doc.cards.iter().find(|c| c.id == "form1").unwrap().clone(),
-        doc.cards.iter().find(|c| c.id == "cmd1").unwrap().clone(),
-    ));
-    doc.cards.push(Card::new(
-        "evt1".to_string(),
-        CardType::Event,
-        vec![
-            "Test Event".to_string(),
-            "+ foo: str".to_string(),
-            "+ bar: str".to_string(),
+    let model = EventModel {
+        expressions: vec![
+            Expression::Form(
+                ExpressionId("AddTodoForm".to_string()),
+                vec![
+                    Field::Text(TextField {
+                        name: "key".to_string(),
+                        data: vec!["todo1".to_string()],
+                    }),
+                    Field::Text(TextField {
+                        name: "description".to_string(),
+                        data: vec!["Wake up".to_string()],
+                    }),
+                ],
+            ),
+            Expression::Command(
+                ExpressionId("AddTodo".to_string()),
+                vec![
+                    Field::Text(TextField {
+                        name: "key".to_string(),
+                        data: vec!["todo1".to_string()],
+                    }),
+                    Field::Text(TextField {
+                        name: "description".to_string(),
+                        data: vec!["Wake up".to_string()],
+                    }),
+                ],
+            ),
+            Expression::Event(
+                ExpressionId("TodoAdded".to_string()),
+                vec![
+                    Field::Text(TextField {
+                        name: "key".to_string(),
+                        data: vec!["todo1".to_string()],
+                    }),
+                    Field::Text(TextField {
+                        name: "description".to_string(),
+                        data: vec!["Wake up".to_string()],
+                    }),
+                ],
+            ),
+            Expression::Flow(
+                ExpressionId(newid()),
+                vec![
+                    ExpressionId("AddTodoForm".to_string()),
+                    ExpressionId("AddTodo".to_string()),
+                    ExpressionId("TodoAdded".to_string()),
+                ],
+            ),
         ],
-    ));
-    doc.arrows.push(Arrow::new(
-        doc.cards.iter().find(|c| c.id == "cmd1").unwrap().clone(),
-        doc.cards.iter().find(|c| c.id == "evt1").unwrap().clone(),
-    ));
+    };
+    doc.ingest_expressions(model.expressions);
     let config = SvgConfig {
         pad: 150f64,
         card_width: 300f64,
