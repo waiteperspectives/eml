@@ -1,0 +1,22 @@
+# eml: 0.0.1
+
+form AddTodoForm {
+  key: "t3"
+  text: "Go to school"
+}
+
+command AddTodo { use AddTodoForm fields }
+
+event TodoAdded { use AddTodoForm fields }
+
+flow { AddTodoForm => AddTodo => TodoAdded }
+
+view TodoList {
+  |   key   |  text         |  state   |
+  |---------|---------------|----------|
+  | t1      | Wake up       | done     |
+  | t2      | Eat breakfast | todo     |
+  | t3      | Go to school  | todo     |
+}
+
+flow { TodoAdded => TodoList }
