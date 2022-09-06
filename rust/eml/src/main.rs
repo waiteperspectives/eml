@@ -1,10 +1,11 @@
 mod eventmodel;
 mod ingest;
+mod parse;
 mod svg;
 mod utils;
 
-use eventmodel::*;
-use ingest::*;
+use indoc::indoc;
+use parse::parse;
 use svg::*;
 use utils::newid;
 
@@ -17,57 +18,15 @@ fn demo() {
         arrows: Vec::new(),
         swimlane: Swimlane::new(),
     };
-    let model = EventModel {
-        expressions: vec![
-            Expression::Form(
-                ExpressionId("AddTodoForm".to_string()),
-                vec![
-                    Field::Text(TextField {
-                        name: "key".to_string(),
-                        data: vec!["todo1".to_string()],
-                    }),
-                    Field::Text(TextField {
-                        name: "description".to_string(),
-                        data: vec!["Wake up".to_string()],
-                    }),
-                ],
-            ),
-            Expression::Command(
-                ExpressionId("AddTodo".to_string()),
-                vec![
-                    Field::Text(TextField {
-                        name: "key".to_string(),
-                        data: vec!["todo1".to_string()],
-                    }),
-                    Field::Text(TextField {
-                        name: "description".to_string(),
-                        data: vec!["Wake up".to_string()],
-                    }),
-                ],
-            ),
-            Expression::Event(
-                ExpressionId("TodoAdded".to_string()),
-                vec![
-                    Field::Text(TextField {
-                        name: "key".to_string(),
-                        data: vec!["todo1".to_string()],
-                    }),
-                    Field::Text(TextField {
-                        name: "description".to_string(),
-                        data: vec!["Wake up".to_string()],
-                    }),
-                ],
-            ),
-            Expression::Flow(
-                ExpressionId(newid()),
-                vec![
-                    ExpressionId("AddTodoForm".to_string()),
-                    ExpressionId("AddTodo".to_string()),
-                    ExpressionId("TodoAdded".to_string()),
-                ],
-            ),
-        ],
-    };
+    let input = indoc! {r#"
+        # eml: 0.0.1
+
+        form AddTodoForm {
+            key: "todo1"
+            text: "Wake up"
+        }
+    "#};
+    let model = parse(input).unwrap();
     doc.ingest_expressions(model.expressions);
     let config = SvgConfig {
         pad: 150f64,

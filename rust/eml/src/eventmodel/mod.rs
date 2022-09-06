@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct TextField {
     pub name: String,
     pub data: Vec<String>,
@@ -18,6 +18,16 @@ pub enum Field {
 
 #[derive(Debug)]
 pub struct ExpressionId(pub String);
+
+#[derive(Debug)]
+pub enum ExpressionType {
+    Form,
+    Job,
+    Command,
+    Event,
+    View,
+    Flow,
+}
 
 #[derive(Debug)]
 pub enum Expression {
