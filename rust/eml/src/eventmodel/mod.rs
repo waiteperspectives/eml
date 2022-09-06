@@ -1,11 +1,26 @@
+// A Field is a single key: value pair (maybe Record is better?)
+// A Series is a key: [values] pair
+
 #[derive(Debug, PartialEq)]
 pub struct TextField {
+    pub name: String,
+    pub data: String,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct TextSeries {
     pub name: String,
     pub data: Vec<String>,
 }
 
 #[derive(Debug)]
 pub struct IntegerField {
+    pub name: String,
+    pub data: i32,
+}
+
+#[derive(Debug)]
+pub struct IntegerSeries {
     pub name: String,
     pub data: Vec<i32>,
 }

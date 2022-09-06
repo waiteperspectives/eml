@@ -9,18 +9,10 @@ fn _ingest_any_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -
             .iter()
             .map(|f| match f {
                 Field::Text(ff) => {
-                    format!("{}: {}", ff.name, ff.data.join(" "))
+                    format!("{}: {}", ff.name, ff.data)
                 }
                 Field::Integer(ff) => {
-                    format!(
-                        "{}: {}",
-                        ff.name,
-                        ff.data
-                            .iter()
-                            .map(|i| i.to_string())
-                            .collect::<Vec<String>>()
-                            .join(" ")
-                    )
+                    format!("{}: {}", ff.name, ff.data.to_string(),)
                 }
             })
             .collect::<Vec<String>>(),
@@ -91,7 +83,6 @@ impl SvgDocument {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::eventmodel::*;
     use crate::svg::*;
     use crate::utils::newid;
 
@@ -113,11 +104,11 @@ mod tests {
                     vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
-                            data: vec!["todo1".to_string()],
+                            data: "todo1".to_string(),
                         }),
                         Field::Text(TextField {
                             name: "description".to_string(),
-                            data: vec!["Wake up".to_string()],
+                            data: "Wake up".to_string(),
                         }),
                     ],
                 ),
@@ -126,11 +117,11 @@ mod tests {
                     vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
-                            data: vec!["todo1".to_string()],
+                            data: "todo1".to_string(),
                         }),
                         Field::Text(TextField {
                             name: "description".to_string(),
-                            data: vec!["Wake up".to_string()],
+                            data: "Wake up".to_string(),
                         }),
                     ],
                 ),
@@ -139,11 +130,11 @@ mod tests {
                     vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
-                            data: vec!["todo1".to_string()],
+                            data: "todo1".to_string(),
                         }),
                         Field::Text(TextField {
                             name: "description".to_string(),
-                            data: vec!["Wake up".to_string()],
+                            data: "Wake up".to_string(),
                         }),
                     ],
                 ),

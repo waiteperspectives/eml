@@ -59,7 +59,7 @@ fn parse_textfield(input: &str) -> IResult<&str, TextField> {
         newinput,
         TextField {
             name: id.to_string(),
-            data: vec![text.to_string()],
+            data: text.to_string(),
         },
     ))
 }
@@ -107,7 +107,7 @@ mod tests {
         let input = "foo: \"bar\"";
         let expected = TextField {
             name: "foo".to_string(),
-            data: vec!["bar".to_string()],
+            data: "bar".to_string(),
         };
         let (_, observed) = parse_textfield(input).unwrap();
         assert_eq!(expected, observed)
@@ -119,11 +119,11 @@ mod tests {
         let expected = vec![
             TextField {
                 name: "foo".to_string(),
-                data: vec!["bar".to_string()],
+                data: "bar".to_string(),
             },
             TextField {
                 name: "baz".to_string(),
-                data: vec!["ooka".to_string()],
+                data: "ooka".to_string(),
             },
         ];
         let (_, observed) = parse_fields(input).unwrap();
@@ -136,11 +136,11 @@ mod tests {
         let expected = vec![
             TextField {
                 name: "foo".to_string(),
-                data: vec!["bar".to_string()],
+                data: "bar".to_string(),
             },
             TextField {
                 name: "baz".to_string(),
-                data: vec!["ooka".to_string()],
+                data: "ooka".to_string(),
             },
         ];
         let (_, observed) = parse_fields(input).unwrap();
@@ -153,11 +153,11 @@ mod tests {
         let expected = vec![
             TextField {
                 name: "foo".to_string(),
-                data: vec!["bar".to_string()],
+                data: "bar".to_string(),
             },
             TextField {
                 name: "baz".to_string(),
-                data: vec!["ooka".to_string()],
+                data: "ooka".to_string(),
             },
         ];
         let (_, observed) = parse_block(input).unwrap();
@@ -170,11 +170,11 @@ mod tests {
         let expected = vec![
             TextField {
                 name: "foo".to_string(),
-                data: vec!["bar".to_string()],
+                data: "bar".to_string(),
             },
             TextField {
                 name: "baz".to_string(),
-                data: vec!["ooka".to_string()],
+                data: "ooka".to_string(),
             },
         ];
         let (_, observed) = parse_block(input).unwrap();
