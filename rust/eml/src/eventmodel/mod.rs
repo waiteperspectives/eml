@@ -13,7 +13,7 @@ pub struct TextSeries {
     pub data: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct IntegerField {
     pub name: String,
     pub data: i32,
@@ -25,16 +25,16 @@ pub struct IntegerSeries {
     pub data: Vec<i32>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Field {
     Text(TextField),
     Integer(IntegerField),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ExpressionId(pub String);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExpressionType {
     Form,
     Job,
@@ -44,13 +44,13 @@ pub enum ExpressionType {
     Flow,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Expression {
     Form(ExpressionId, Vec<Field>),
     Job(ExpressionId, Vec<Field>),
     Command(ExpressionId, Vec<Field>),
     Event(ExpressionId, Vec<Field>),
-    View(ExpressionId, Vec<Field>),
+    View(ExpressionId, Vec<String>),
     Flow(ExpressionId, Vec<ExpressionId>),
 }
 

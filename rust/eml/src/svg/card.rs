@@ -83,13 +83,18 @@ impl Card {
             let lines = self
                 .text_lines
                 .iter()
-                .map(|line| format!("<tspan x='0' dy='1rem'>{}</tspan>", line))
+                .map(|line| {
+                    format!(
+                        "<tspan x='0' dy='1rem' xml:space='preserve'>{}</tspan>",
+                        line
+                    )
+                })
                 .collect::<Vec<String>>()
                 .join("");
             format!(
                 "\
-            <text transform='translate({translate_x} {translate_y})' x='0' y='0'>\
-            <tspan x='0' dy='1rem'>{id}</tspan>\
+            <text transform='translate({translate_x} {translate_y})' x='0' y='0' xml:space='preserve' >\
+            <tspan x='0' dy='1rem' xml:space='preserve'>{id}</tspan>\
             <tspan x='0' dy='1rem'>==========</tspan>\
             {lines}\
             </text>\

@@ -1,7 +1,7 @@
 use super::eventmodel::*;
 use super::svg::{Arrow, Card, CardType, SvgDocument};
 
-fn _ingest_any_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -> Card {
+fn _ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -> Card {
     Card::new(
         id.0.clone(),
         card_type,
@@ -19,24 +19,28 @@ fn _ingest_any_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -
     )
 }
 
+fn _ingest_raw_card(card_type: CardType, id: ExpressionId, rawlines: Vec<String>) -> Card {
+    Card::new(id.0.clone(), card_type, rawlines)
+}
+
 pub fn ingest_form(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_any_card(CardType::Form, id, fields)
+    _ingest_fields_card(CardType::Form, id, fields)
 }
 
 pub fn ingest_job(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_any_card(CardType::Job, id, fields)
+    _ingest_fields_card(CardType::Job, id, fields)
 }
 
 pub fn ingest_command(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_any_card(CardType::Command, id, fields)
+    _ingest_fields_card(CardType::Command, id, fields)
 }
 
 pub fn ingest_event(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_any_card(CardType::Event, id, fields)
+    _ingest_fields_card(CardType::Event, id, fields)
 }
 
-pub fn ingest_view(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_any_card(CardType::View, id, fields)
+pub fn ingest_view(id: ExpressionId, rawlines: Vec<String>) -> Card {
+    _ingest_raw_card(CardType::View, id, rawlines)
 }
 
 // impl this here because it relies on eventmodel stuff
@@ -60,8 +64,8 @@ impl SvgDocument {
                     let card = ingest_event(id, fields);
                     self.cards.push(card);
                 }
-                Expression::View(id, fields) => {
-                    let card = ingest_view(id, fields);
+                Expression::View(id, rawlines) => {
+                    let card = ingest_view(id, rawlines);
                     self.cards.push(card);
                 }
                 Expression::Flow(_, expr_ids) => {

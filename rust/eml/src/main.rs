@@ -25,6 +25,36 @@ fn demo() {
             key: "todo1"
             text: "Wake up"
         }
+
+        command AddTodo {
+            key: "todo1"
+            text: "Wake up"
+        }
+
+        event TodoAdded {
+            key: "todo1"
+            text: "Wake up"
+        }
+
+        view TodoList {
+          |   key   |  text         |  state   |
+          |---------|---------------|----------|
+          | t1      | Wake up       | done     |
+          | t2      | Eat breakfast | todo     |
+          | t3      | Go to school  | todo     |
+        }
+
+        flow { AddTodoForm => AddTodo => TodoAdded => TodoList }
+
+        view OtherList {
+          |   key   |  text         |
+          |---------|---------------|
+          | t1      | Wake up       |
+          | t2      | Eat breakfast |
+          | t3      | Go to school  |
+        }
+
+        flow { TodoAdded => OtherList }
     "#};
     let model = parse(input).unwrap();
     doc.ingest_expressions(model.expressions);

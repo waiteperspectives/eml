@@ -56,7 +56,7 @@ impl SvgDocument {
                     x_pos += config.card_width + config.pad;
                 }
                 CardType::View => {
-                    card.set_origin(x_pos, config.card_height * 2f64 + config.pad * 3f64);
+                    card.set_origin(x_pos, config.card_height + config.pad * 3f64);
                     card.set_dimensions(config.card_width, config.card_height, config.pad);
                     x_pos += config.card_width + config.pad;
                 }
