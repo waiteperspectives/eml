@@ -21,40 +21,74 @@ fn demo() {
     let input = indoc! {r#"
         # eml: 0.0.1
 
-        form AddTodoForm {
-            key: "todo1"
-            text: "Wake up"
+        form CustomerForm {
+            name: "Bob"
+            age: "21"
+            email: "bob@example.com"
         }
 
-        command AddTodo {
-            key: "todo1"
-            text: "Wake up"
+        command AddCustomer {
+            name: "Bob"
+            age: "21"
+            email: "bob@example.com"
         }
 
-        event TodoAdded {
-            key: "todo1"
-            text: "Wake up"
+        event CustomerAdded {
+            name: "Bob"
+            age: "21"
+            email: "bob@example.com"
         }
 
-        view TodoList {
-          |   key   |  text         |  state   |
-          |---------|---------------|----------|
-          | t1      | Wake up       | done     |
-          | t2      | Eat breakfast | todo     |
-          | t3      | Go to school  | todo     |
+
+        view AccountsToAdd {
+          | CustomerId | state  |
+          |------------|--------|
+          | 123        | done   |
+          | 456        | todo   |
+          | 789        | todo   |
         }
 
-        flow { AddTodoForm => AddTodo => TodoAdded => TodoList }
+        flow { CustomerForm => AddCustomer => CustomerAdded }
 
-        view OtherList {
-          |   key   |  text         |
-          |---------|---------------|
-          | t1      | Wake up       |
-          | t2      | Eat breakfast |
-          | t3      | Go to school  |
+        job ProcessAccountsToAdd {}
+
+        command AddAccount {
+            CustomerId: "123"
+            Name: "Bob"
         }
 
-        flow { TodoAdded => OtherList }
+        event AccountAdded {
+            CustomerId: "123"
+            Name: "Bob"
+        }
+
+        flow { CustomerAdded => AccountsToAdd }
+        flow { AccountsToAdd => ProcessAccountsToAdd => AddAccount => AccountAdded }
+
+        view UsersToAdd {
+          | CustomerId | state  |
+          |------------|--------|
+          | 123        | done   |
+          | 456        | todo   |
+          | 789        | todo   |
+        }
+
+        job ProcessUsersToAdd {}
+
+        command AddUser {
+            Name: "Bob"
+            Login: "Bob"
+        }
+
+        event UserAdded {
+            Name: "Bob"
+            Login: "Bob"
+        }
+
+        flow { CustomerAdded => UsersToAdd }
+        flow { UsersToAdd => ProcessUsersToAdd => AddUser => UserAdded }
+
+
     "#};
     let model = parse(input).unwrap();
     doc.ingest_expressions(model.expressions);
