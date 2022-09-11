@@ -79,17 +79,16 @@ impl Card {
     }
 
     fn _render(&self, fill: &str) -> String {
-        let text = if self.text_lines.len() as f64 > 0f64 {
-            let lines = self
-                .text_lines
-                .iter()
-                .map(|line| format!("<tspan x='0' dy='1rem'>{}</tspan>", line))
-                .collect::<Vec<String>>()
-                .join("");
-            format!(
+        let lines = self
+            .text_lines
+            .iter()
+            .map(|line| format!("<tspan x='0' dy='1rem'>{}</tspan>", line))
+            .collect::<Vec<String>>()
+            .join("");
+        let text = format!(
                 "\
             <text transform='translate({translate_x} {translate_y})' x='0' y='0' style='white-space: pre;' font-family='monospace' >\
-            <tspan x='0' dy='1rem'>{id}</tspan>\
+            <tspan x='0' dy='1rem' font-size='larger' font-weight='bold'>{id}</tspan>\
             <tspan x='0' dy='1rem'>==========</tspan>\
             {lines}\
             </text>\
@@ -98,10 +97,7 @@ impl Card {
                 translate_x = self.text_translate.x,
                 translate_y = self.text_translate.y,
                 lines = lines
-            )
-        } else {
-            "".to_string()
-        };
+            );
         format!("\
         <rect id='{id}' stroke='black' stroke-width='2' x='{x}' y='{y}' height='{height}' width='{width}' fill='{fill}' />\
         {text}\
