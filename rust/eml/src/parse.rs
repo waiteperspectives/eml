@@ -77,7 +77,7 @@ fn raw_block(input: &str) -> IResult<&str, Vec<String>> {
     let (newinput, raw) = delimited(block_begin, take_until("}"), block_end)(input)?;
     let rawlines = raw
         .split("\n")
-        .map(|x| x.to_string())
+        .map(|x| x.trim_start().to_string())
         .collect::<Vec<String>>();
     Ok((newinput, rawlines))
 }

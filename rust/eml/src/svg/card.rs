@@ -74,8 +74,8 @@ impl Card {
     pub fn set_dimensions(&mut self, width: f64, height: f64, pad: f64) {
         self.height = height;
         self.width = width;
-        self.text_translate.x = self.origin.x as f64 + pad as f64 / 4f64;
-        self.text_translate.y = self.origin.y as f64 + pad as f64 / 6f64;
+        self.text_translate.x = self.origin.x as f64 + pad as f64 / 12f64;
+        self.text_translate.y = self.origin.y as f64 + pad as f64 / 12f64;
     }
 
     fn _render(&self, fill: &str) -> String {
@@ -83,18 +83,13 @@ impl Card {
             let lines = self
                 .text_lines
                 .iter()
-                .map(|line| {
-                    format!(
-                        "<tspan x='0' dy='1rem' xml:space='preserve'>{}</tspan>",
-                        line
-                    )
-                })
+                .map(|line| format!("<tspan x='0' dy='1rem'>{}</tspan>", line))
                 .collect::<Vec<String>>()
                 .join("");
             format!(
                 "\
-            <text transform='translate({translate_x} {translate_y})' x='0' y='0' xml:space='preserve' >\
-            <tspan x='0' dy='1rem' xml:space='preserve'>{id}</tspan>\
+            <text transform='translate({translate_x} {translate_y})' x='0' y='0' style='white-space: pre;' font-family='monospace' >\
+            <tspan x='0' dy='1rem'>{id}</tspan>\
             <tspan x='0' dy='1rem'>==========</tspan>\
             {lines}\
             </text>\
