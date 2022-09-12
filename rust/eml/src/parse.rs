@@ -1,7 +1,7 @@
 use super::eventmodel::*;
 use super::utils::newid;
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_until};
+use nom::bytes::complete::{is_not, tag, take_until};
 use nom::character::complete::{alpha1, u32 as parse_u32};
 use nom::character::complete::{line_ending, space0, space1};
 use nom::multi::{many0, many1, separated_list0};
@@ -41,8 +41,8 @@ fn textfield_key(input: &str) -> IResult<&str, &str> {
 }
 
 fn textfield_value(input: &str) -> IResult<&str, &str> {
-    let parse_until_quote = take_until("\"");
-    let (rest, text) = preceded(space0, delimited(tag("\""), parse_until_quote, tag("\"")))(input)?;
+    let parse_until_end = is_not(",\n}");
+    let (rest, text) = preceded(space0, parse_until_end)(input)?;
     Ok((rest, text))
 }
 
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn test_textfield() {
-        let input = "foo: \"bar\"";
+        let input = "foo: bar";
         let expected = Field::Text(TextField {
             name: "foo".to_string(),
             data: "bar".to_string(),
@@ -204,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_fields_newline() {
-        let input = "foo: \"bar\"\n    baz: \"ooka\"";
+        let input = "foo: bar\n    baz: ooka";
         let expected = vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn test_fields_csv() {
-        let input = "foo: \"bar\", baz: \"ooka\"";
+        let input = "foo: bar, baz: ooka";
         let expected = vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
@@ -238,7 +238,7 @@ mod tests {
 
     #[test]
     fn test_fields_block_multiline() {
-        let input = "{\n  foo: \"bar\", baz: \"ooka\"\n}";
+        let input = "{\n  foo: bar, baz: ooka\n}";
         let expected = vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn test_fields_block_inline() {
-        let input = "{foo: \"bar\", baz: \"ooka\"}";
+        let input = "{foo: bar, baz: ooka}";
         let expected = vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
@@ -296,10 +296,10 @@ mod tests {
     fn test_parse_body_03() {
         let input = indoc! {r#"
             form FooForm {
-                foo: "bar"
+                foo: bar
             }
             command AddBar {
-                foo: "bar"
+                foo: bar
             }
 
         "#};
