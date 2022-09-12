@@ -76,6 +76,11 @@ impl SvgDocument {
         format!(
             "\
             <svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}'>\
+              <defs>\
+                <marker id='triangle' viewBox='0 0 10 10' refX='0' refY='5' markerUnits='strokeWidth' markerWidth='10' markerHeight='8' orient='auto'>\
+                  <path d='M 0 0 L 10 5 L 0 10 z' />\
+                </marker>\
+              </defs>\
               <g id='swimlane' stroke='black' stroke-width='3' >\
                 <line id='swimlane_top' x1='0' y1='{top}' x2='{width}' y2='{top}' />\
                 <line id='swimlane_bottom' x1='0' y1='{bottom}' x2='{width}' y2='{bottom}' />\

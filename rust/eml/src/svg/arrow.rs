@@ -50,25 +50,51 @@ impl Arrow {
     }
 
     pub fn get_points(&self) -> (Point, Point) {
+        let arrowhead = 15f64;
+
         match (&self.begin_at.card_type, &self.end_at.card_type) {
-            (CardType::Job, CardType::Command) => {
-                (self.begin_at.right_anchor(), self.end_at.top_anchor())
-            }
-            (CardType::Form, CardType::Command) => {
-                (self.begin_at.right_anchor(), self.end_at.top_anchor())
-            }
-            (CardType::Command, CardType::Event) => {
-                (self.begin_at.bottom_anchor(), self.end_at.left_anchor())
-            }
-            (CardType::Event, CardType::View) => {
-                (self.begin_at.right_anchor(), self.end_at.bottom_anchor())
-            }
-            (CardType::View, CardType::Job) => {
-                (self.begin_at.top_anchor(), self.end_at.left_anchor())
-            }
-            (CardType::View, CardType::Form) => {
-                (self.begin_at.top_anchor(), self.end_at.left_anchor())
-            }
+            (CardType::Job, CardType::Command) => (
+                self.begin_at.right_anchor(),
+                Point {
+                    x: self.end_at.top_anchor().x,
+                    y: self.end_at.top_anchor().y - arrowhead,
+                },
+            ),
+            (CardType::Form, CardType::Command) => (
+                self.begin_at.right_anchor(),
+                Point {
+                    x: self.end_at.top_anchor().x,
+                    y: self.end_at.top_anchor().y - arrowhead,
+                },
+            ),
+            (CardType::Command, CardType::Event) => (
+                self.begin_at.bottom_anchor(),
+                Point {
+                    x: self.end_at.left_anchor().x - arrowhead,
+                    y: self.end_at.left_anchor().y,
+                },
+            ),
+            (CardType::Event, CardType::View) => (
+                self.begin_at.right_anchor(),
+                Point {
+                    x: self.end_at.bottom_anchor().x,
+                    y: self.end_at.bottom_anchor().y + arrowhead,
+                },
+            ),
+            (CardType::View, CardType::Job) => (
+                self.begin_at.top_anchor(),
+                Point {
+                    x: self.end_at.left_anchor().x - arrowhead,
+                    y: self.end_at.left_anchor().y,
+                },
+            ),
+            (CardType::View, CardType::Form) => (
+                self.begin_at.top_anchor(),
+                Point {
+                    x: self.end_at.left_anchor().x - arrowhead,
+                    y: self.end_at.left_anchor().y,
+                },
+            ),
             (_, _) => panic!("Illegal Arrow!"),
         }
     }
@@ -98,7 +124,7 @@ impl Arrow {
             }
         };
         format!("\
-        <path d='M {left_x} {left_y} Q {cp0} {cp1} {right_x} {right_y}' stroke='black' stroke-width='2' fill='none' />\
+        <path d='M {left_x} {left_y} Q {cp0} {cp1} {right_x} {right_y}' stroke='black' stroke-width='2' fill='none' marker-end='url(#triangle)' />\
         ",
         left_x=left.x,
         left_y=left.y,
