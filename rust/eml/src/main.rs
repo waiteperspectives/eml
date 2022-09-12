@@ -11,6 +11,24 @@ use std::io;
 use svg::*;
 use utils::newid;
 
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// eml input: either stdin or filepath
+    #[clap(value_parser, default_value = "-")]
+    input: String,
+}
+
+fn read_input(input: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let mut buf = String::new();
+    let mut rdr: Box<dyn io::Read> = match input {
+        "-" => Box::new(io::stdin()),
+        _ => Box::new(File::open(input)?),
+    };
+    rdr.read_to_string(&mut buf)?;
+    Ok(buf)
+}
+
 fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let mut doc = SvgDocument {
         id: newid(),
@@ -30,24 +48,6 @@ fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     doc.set_dimensions(&config);
     let svg_string = doc.render();
     Ok(svg_string)
-}
-
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// eml input: either stdin or filepath
-    #[clap(value_parser, default_value = "-")]
-    input: String,
-}
-
-fn read_input(input: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let mut buf = String::new();
-    let mut rdr: Box<dyn io::Read> = match input {
-        "-" => Box::new(io::stdin()),
-        _ => Box::new(File::open(input)?),
-    };
-    rdr.read_to_string(&mut buf)?;
-    Ok(buf)
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
