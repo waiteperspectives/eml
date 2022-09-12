@@ -1,6 +1,0 @@
-# eml: 0.0.1
-
-form AddTodoForm {
-  key: "todo1"
-  description: "Wake up"
-}
