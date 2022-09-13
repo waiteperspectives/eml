@@ -1,22 +1,14 @@
 # eml: 0.0.1
 
 form CustomerForm {
-    name: "Bob"
-    age: "21"
-    email: "bob@example.com"
+    name: Bob
+    age: 21
+    email: bob@example.com
 }
 
-command AddCustomer {
-    name: "Bob"
-    age: "21"
-    email: "bob@example.com"
-}
+command AddCustomer {use CustomerForm}
 
-event CustomerAdded {
-    name: "Bob"
-    age: "21"
-    email: "bob@example.com"
-}
+event CustomerAdded { use CustomerForm }
 
 flow { CustomerForm => AddCustomer => CustomerAdded }
 
@@ -36,13 +28,13 @@ flow { CustomerAdded => DemoTodo }
 job ProcessAccountsToAdd {}
 
 command AddAccount {
-    CustomerId: "123"
-    Name: "Bob"
+    CustomerId: 123
+    Name: Bob
 }
 
 event AccountAdded {
-    CustomerId: "123"
-    Name: "Bob"
+    CustomerId: 123
+    Name: Bob
 }
 
 flow { AccountsToAdd => ProcessAccountsToAdd => AddAccount => AccountAdded }
@@ -58,13 +50,13 @@ view UsersToAdd {
 job ProcessUsersToAdd {}
 
 command AddUser {
-    Name: "Bob"
-    Login: "Bob"
+    Name: Bob
+    Login: Bob
 }
 
 event UserAdded {
-    Name: "Bob"
-    Login: "Bob"
+    Name: Bob
+    Login: Bob
 }
 
 flow { CustomerAdded => UsersToAdd }
