@@ -65,10 +65,11 @@ fn fields(input: &str) -> IResult<&str, Vec<Field>> {
     separated_list0(delimiter, field_parser)(input)
 }
 
-fn fields_block(input: &str) -> IResult<&str, Vec<Field>> {
+fn fields_block(input: &str) -> IResult<&str, Body> {
     let block_begin = terminated(tag("{"), alt((line_ending, space0)));
     let block_end = preceded(alt((line_ending, space0)), tag("}"));
-    delimited(block_begin, fields, block_end)(input)
+    let (rest, fields) = delimited(block_begin, fields, block_end)(input)?;
+    Ok((rest, Body::FieldBody(fields)))
 }
 
 fn raw_block(input: &str) -> IResult<&str, Body> {
@@ -130,29 +131,34 @@ fn flow_block(input: &str) -> IResult<&str, Vec<ExpressionId>> {
     Ok((newinput, expressions))
 }
 
+fn block(input: &str) -> IResult<&str, (ExpressionId, Body)> {
+    let (more, exprid) = expression_id(input)?;
+    let (newinput, body) = alt((use_block, fields_block, raw_block))(more)?;
+    Ok((newinput, (exprid, body)))
+}
+
 fn expression(input: &str) -> IResult<&str, Expression> {
     let (rest, exprtyp) = expression_type(input)?;
     match exprtyp {
         ExpressionType::Form => {
-            let (newinput, (exprid, fields)) = tuple((expression_id, fields_block))(rest)?;
-            Ok((newinput, Expression::Form(exprid, fields)))
+            let (newinput, (exprid, body)) = block(rest)?;
+            Ok((newinput, Expression::Form(exprid, body)))
         }
         ExpressionType::Job => {
-            let (newinput, (exprid, fields)) = tuple((expression_id, fields_block))(rest)?;
-            Ok((newinput, Expression::Job(exprid, fields)))
+            let (newinput, (exprid, body)) = block(rest)?;
+            Ok((newinput, Expression::Job(exprid, body)))
         }
         ExpressionType::Command => {
-            let (newinput, (exprid, fields)) = tuple((expression_id, fields_block))(rest)?;
-            Ok((newinput, Expression::Command(exprid, fields)))
+            let (newinput, (exprid, body)) = block(rest)?;
+            Ok((newinput, Expression::Command(exprid, body)))
         }
         ExpressionType::Event => {
-            let (newinput, (exprid, fields)) = tuple((expression_id, fields_block))(rest)?;
-            Ok((newinput, Expression::Event(exprid, fields)))
+            let (newinput, (exprid, body)) = block(rest)?;
+            Ok((newinput, Expression::Event(exprid, body)))
         }
         ExpressionType::View => {
-            let (more, exprid) = expression_id(rest)?;
-            let (newinput, viewbody) = alt((use_block, raw_block))(more)?;
-            Ok((newinput, Expression::View(exprid, viewbody)))
+            let (newinput, (exprid, body)) = block(rest)?;
+            Ok((newinput, Expression::View(exprid, body)))
         }
         ExpressionType::Flow => {
             let (newinput, ids) = preceded(space0, flow_block)(rest)?;
@@ -248,7 +254,7 @@ mod tests {
     #[test]
     fn test_fields_block_multiline() {
         let input = "{\n  foo: bar, baz: ooka\n}";
-        let expected = vec![
+        let expected = Body::FieldBody(vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
                 data: "bar".to_string(),
@@ -257,7 +263,7 @@ mod tests {
                 name: "baz".to_string(),
                 data: "ooka".to_string(),
             }),
-        ];
+        ]);
         let (_, observed) = fields_block(input).unwrap();
         assert_eq!(expected, observed)
     }
@@ -265,7 +271,7 @@ mod tests {
     #[test]
     fn test_fields_block_inline() {
         let input = "{foo: bar, baz: ooka}";
-        let expected = vec![
+        let expected = Body::FieldBody(vec![
             Field::Text(TextField {
                 name: "foo".to_string(),
                 data: "bar".to_string(),
@@ -274,7 +280,7 @@ mod tests {
                 name: "baz".to_string(),
                 data: "ooka".to_string(),
             }),
-        ];
+        ]);
         let (_, observed) = fields_block(input).unwrap();
         assert_eq!(expected, observed)
     }
@@ -284,7 +290,7 @@ mod tests {
         let input = "form FooForm {}";
         let expected = vec![Expression::Form(
             ExpressionId("FooForm".to_string()),
-            vec![],
+            Body::FieldBody(vec![]),
         )];
         let (_, observed) = expressions(input).unwrap();
         assert_eq!(expected, observed)
@@ -295,10 +301,10 @@ mod tests {
         let input = "form FooForm { foo:bar}";
         let expected = vec![Expression::Form(
             ExpressionId("FooForm".to_string()),
-            vec![Field::Text(TextField {
+            Body::FieldBody(vec![Field::Text(TextField {
                 name: "foo".to_string(),
                 data: "bar".to_string(),
-            })],
+            })]),
         )];
         let (_, observed) = expressions(input).unwrap();
         assert_eq!(expected, observed)
@@ -318,17 +324,17 @@ mod tests {
         let expected = vec![
             Expression::Form(
                 ExpressionId("FooForm".to_string()),
-                vec![Field::Text(TextField {
+                Body::FieldBody(vec![Field::Text(TextField {
                     name: "foo".to_string(),
                     data: "bar".to_string(),
-                })],
+                })]),
             ),
             Expression::Command(
                 ExpressionId("AddBar".to_string()),
-                vec![Field::Text(TextField {
+                Body::FieldBody(vec![Field::Text(TextField {
                     name: "foo".to_string(),
                     data: "bar".to_string(),
-                })],
+                })]),
             ),
         ];
         let (_, observed) = expressions(input).unwrap();

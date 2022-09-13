@@ -1,7 +1,7 @@
 use super::eventmodel::*;
 use super::svg::{Arrow, Card, CardType, SvgDocument};
 
-fn _ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -> Card {
+fn ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>) -> Card {
     Card::new(
         id.0.clone(),
         card_type,
@@ -16,28 +16,8 @@ fn _ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>
     )
 }
 
-fn _ingest_table_card(card_type: CardType, id: ExpressionId, tbl: Vec<String>) -> Card {
+fn ingest_table_card(card_type: CardType, id: ExpressionId, tbl: Vec<String>) -> Card {
     Card::new(id.0.clone(), card_type, tbl)
-}
-
-pub fn ingest_form(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_fields_card(CardType::Form, id, fields)
-}
-
-pub fn ingest_job(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_fields_card(CardType::Job, id, fields)
-}
-
-pub fn ingest_command(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_fields_card(CardType::Command, id, fields)
-}
-
-pub fn ingest_event(id: ExpressionId, fields: Vec<Field>) -> Card {
-    _ingest_fields_card(CardType::Event, id, fields)
-}
-
-pub fn ingest_view(id: ExpressionId, tbl: Vec<String>) -> Card {
-    _ingest_table_card(CardType::View, id, tbl)
 }
 
 // impl this here because it relies on eventmodel stuff
@@ -46,36 +26,33 @@ impl SvgDocument {
         self.cards.iter().find(|c| c.id == id.0).unwrap().clone()
     }
 
+    pub fn ingest_card(&mut self, card_type: CardType, id: ExpressionId, body: Body) {
+        match body {
+            Body::FieldBody(fields) => {
+                let card = ingest_fields_card(card_type, id, fields);
+                self.cards.push(card);
+            }
+            Body::TableBody(tbl) => {
+                let card = ingest_table_card(card_type, id, tbl);
+                self.cards.push(card);
+            }
+            Body::UseBody(exprid) => {
+                let mut card = self.get_card(exprid);
+                card.id = id.0;
+                card.card_type = card_type;
+                self.cards.push(card);
+            }
+        }
+    }
+
     pub fn ingest_expressions(&mut self, expressions: Vec<Expression>) {
         for expr in expressions {
             match expr {
-                Expression::Form(id, fields) => {
-                    let card = ingest_form(id, fields);
-                    self.cards.push(card);
-                }
-                Expression::Job(id, fields) => {
-                    let card = ingest_job(id, fields);
-                    self.cards.push(card);
-                }
-                Expression::Command(id, fields) => {
-                    let card = ingest_command(id, fields);
-                    self.cards.push(card);
-                }
-                Expression::Event(id, fields) => {
-                    let card = ingest_event(id, fields);
-                    self.cards.push(card);
-                }
-                Expression::View(id, body) => match body {
-                    Body::TableBody(tbl) => {
-                        let card = ingest_view(id, tbl);
-                        self.cards.push(card);
-                    }
-                    Body::UseBody(exprid) => {
-                        let mut card = self.get_card(exprid);
-                        card.id = id.0;
-                        self.cards.push(card);
-                    }
-                },
+                Expression::Form(id, body) => self.ingest_card(CardType::Form, id, body),
+                Expression::Job(id, body) => self.ingest_card(CardType::Job, id, body),
+                Expression::Command(id, body) => self.ingest_card(CardType::Command, id, body),
+                Expression::Event(id, body) => self.ingest_card(CardType::Event, id, body),
+                Expression::View(id, body) => self.ingest_card(CardType::View, id, body),
                 Expression::Flow(_, expr_ids) => {
                     let (_, from_ids) = expr_ids.split_last().unwrap();
                     let (_, to_ids) = expr_ids.split_first().unwrap();
@@ -113,7 +90,7 @@ mod tests {
             expressions: vec![
                 Expression::Form(
                     ExpressionId("AddTodoForm".to_string()),
-                    vec![
+                    Body::FieldBody(vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
                             data: "todo1".to_string(),
@@ -122,11 +99,11 @@ mod tests {
                             name: "description".to_string(),
                             data: "Wake up".to_string(),
                         }),
-                    ],
+                    ]),
                 ),
                 Expression::Command(
                     ExpressionId("AddTodo".to_string()),
-                    vec![
+                    Body::FieldBody(vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
                             data: "todo1".to_string(),
@@ -135,11 +112,11 @@ mod tests {
                             name: "description".to_string(),
                             data: "Wake up".to_string(),
                         }),
-                    ],
+                    ]),
                 ),
                 Expression::Event(
                     ExpressionId("TodoAdded".to_string()),
-                    vec![
+                    Body::FieldBody(vec![
                         Field::Text(TextField {
                             name: "key".to_string(),
                             data: "todo1".to_string(),
@@ -148,7 +125,7 @@ mod tests {
                             name: "description".to_string(),
                             data: "Wake up".to_string(),
                         }),
-                    ],
+                    ]),
                 ),
                 Expression::Flow(
                     ExpressionId(newid()),
