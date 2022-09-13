@@ -18,6 +18,7 @@ event CustomerAdded {
     email: "bob@example.com"
 }
 
+flow { CustomerForm => AddCustomer => CustomerAdded }
 
 view AccountsToAdd {
   | CustomerId | state  |
@@ -26,8 +27,11 @@ view AccountsToAdd {
   | 456        | todo   |
   | 789        | todo   |
 }
+flow { CustomerAdded => AccountsToAdd }
 
-flow { CustomerForm => AddCustomer => CustomerAdded }
+view DemoTodo { use AccountsToAdd }
+flow { CustomerAdded => DemoTodo }
+
 
 job ProcessAccountsToAdd {}
 
@@ -41,7 +45,6 @@ event AccountAdded {
     Name: "Bob"
 }
 
-flow { CustomerAdded => AccountsToAdd }
 flow { AccountsToAdd => ProcessAccountsToAdd => AddAccount => AccountAdded }
 
 view UsersToAdd {
