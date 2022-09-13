@@ -11,9 +11,6 @@ fn _ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>
                 Field::Text(ff) => {
                     format!("{}: {}", ff.name, ff.data)
                 }
-                Field::Integer(ff) => {
-                    format!("{}: {}", ff.name, ff.data.to_string(),)
-                }
             })
             .collect::<Vec<String>>(),
     )

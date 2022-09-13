@@ -14,21 +14,8 @@ pub struct TextSeries {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct IntegerField {
-    pub name: String,
-    pub data: i32,
-}
-
-#[derive(Debug)]
-pub struct IntegerSeries {
-    pub name: String,
-    pub data: Vec<i32>,
-}
-
-#[derive(Debug, PartialEq)]
 pub enum Field {
     Text(TextField),
-    Integer(IntegerField),
 }
 
 #[derive(Debug, PartialEq)]
