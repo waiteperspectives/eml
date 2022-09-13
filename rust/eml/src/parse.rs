@@ -71,7 +71,7 @@ fn fields_block(input: &str) -> IResult<&str, Vec<Field>> {
     delimited(block_begin, fields, block_end)(input)
 }
 
-fn raw_block(input: &str) -> IResult<&str, Vec<String>> {
+fn raw_block(input: &str) -> IResult<&str, Body> {
     let block_begin = terminated(tag("{"), space0);
     let block_end = preceded(space0, tag("}"));
     let (newinput, raw) = delimited(block_begin, take_until("}"), block_end)(input)?;
@@ -79,7 +79,15 @@ fn raw_block(input: &str) -> IResult<&str, Vec<String>> {
         .split("\n")
         .map(|x| x.trim_start().to_string())
         .collect::<Vec<String>>();
-    Ok((newinput, rawlines))
+    Ok((newinput, Body::TableBody(rawlines)))
+}
+
+fn use_block(input: &str) -> IResult<&str, Body> {
+    let block_begin = terminated(tag("{"), space0);
+    let block_end = preceded(space0, tag("}"));
+    let useid = preceded(tag("use "), alpha1);
+    let (rest, exprid) = delimited(block_begin, useid, block_end)(input)?;
+    Ok((rest, Body::UseBody(ExpressionId(exprid.to_string()))))
 }
 
 fn expression_type(input: &str) -> IResult<&str, ExpressionType> {
@@ -142,11 +150,9 @@ fn expression(input: &str) -> IResult<&str, Expression> {
             Ok((newinput, Expression::Event(exprid, fields)))
         }
         ExpressionType::View => {
-            let (newinput, (exprid, rawlines)) = tuple((expression_id, raw_block))(rest)?;
-            Ok((
-                newinput,
-                Expression::View(exprid, Body::TableBody(rawlines)),
-            ))
+            let (more, exprid) = expression_id(rest)?;
+            let (newinput, viewbody) = alt((use_block, raw_block))(more)?;
+            Ok((newinput, Expression::View(exprid, viewbody)))
         }
         ExpressionType::Flow => {
             let (newinput, ids) = preceded(space0, flow_block)(rest)?;

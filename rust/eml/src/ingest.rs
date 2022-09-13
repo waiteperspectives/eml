@@ -74,7 +74,8 @@ impl SvgDocument {
                         self.cards.push(card);
                     }
                     Body::UseBody(exprid) => {
-                        let card = self.get_card(exprid);
+                        let mut card = self.get_card(exprid);
+                        card.id = id.0;
                         self.cards.push(card);
                     }
                 },

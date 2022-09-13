@@ -1,16 +1,16 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextTranslate {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CardType {
     Job,
     Form,
@@ -19,7 +19,7 @@ pub enum CardType {
     View,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Card {
     pub id: String,
     pub card_type: CardType,

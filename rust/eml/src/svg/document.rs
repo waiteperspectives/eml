@@ -18,18 +18,6 @@ pub struct SvgDocument {
 }
 
 impl SvgDocument {
-    pub fn add_cards(&mut self, cards: Vec<Card>) {
-        for card in cards.into_iter() {
-            self.cards.push(card);
-        }
-    }
-
-    pub fn add_arrows(&mut self, arrows: Vec<Arrow>) {
-        for arrow in arrows.into_iter() {
-            self.arrows.push(arrow);
-        }
-    }
-
     pub fn set_dimensions(&mut self, config: &SvgConfig) {
         self.height = config.card_height * 3f64 + config.pad * 6f64;
         self.width =
