@@ -45,12 +45,18 @@ pub enum ExpressionType {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum Body {
+    TableBody(Vec<String>),
+    UseBody(ExpressionId),
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Expression {
     Form(ExpressionId, Vec<Field>),
     Job(ExpressionId, Vec<Field>),
     Command(ExpressionId, Vec<Field>),
     Event(ExpressionId, Vec<Field>),
-    View(ExpressionId, Vec<String>),
+    View(ExpressionId, Body),
     Flow(ExpressionId, Vec<ExpressionId>),
 }
 

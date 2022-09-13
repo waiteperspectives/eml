@@ -19,8 +19,8 @@ fn _ingest_fields_card(card_type: CardType, id: ExpressionId, fields: Vec<Field>
     )
 }
 
-fn _ingest_raw_card(card_type: CardType, id: ExpressionId, rawlines: Vec<String>) -> Card {
-    Card::new(id.0.clone(), card_type, rawlines)
+fn _ingest_table_card(card_type: CardType, id: ExpressionId, tbl: Vec<String>) -> Card {
+    Card::new(id.0.clone(), card_type, tbl)
 }
 
 pub fn ingest_form(id: ExpressionId, fields: Vec<Field>) -> Card {
@@ -39,12 +39,16 @@ pub fn ingest_event(id: ExpressionId, fields: Vec<Field>) -> Card {
     _ingest_fields_card(CardType::Event, id, fields)
 }
 
-pub fn ingest_view(id: ExpressionId, rawlines: Vec<String>) -> Card {
-    _ingest_raw_card(CardType::View, id, rawlines)
+pub fn ingest_view(id: ExpressionId, tbl: Vec<String>) -> Card {
+    _ingest_table_card(CardType::View, id, tbl)
 }
 
 // impl this here because it relies on eventmodel stuff
 impl SvgDocument {
+    pub fn get_card(&self, id: ExpressionId) -> Card {
+        self.cards.iter().find(|c| c.id == id.0).unwrap().clone()
+    }
+
     pub fn ingest_expressions(&mut self, expressions: Vec<Expression>) {
         for expr in expressions {
             match expr {
@@ -64,10 +68,16 @@ impl SvgDocument {
                     let card = ingest_event(id, fields);
                     self.cards.push(card);
                 }
-                Expression::View(id, rawlines) => {
-                    let card = ingest_view(id, rawlines);
-                    self.cards.push(card);
-                }
+                Expression::View(id, body) => match body {
+                    Body::TableBody(tbl) => {
+                        let card = ingest_view(id, tbl);
+                        self.cards.push(card);
+                    }
+                    Body::UseBody(exprid) => {
+                        let card = self.get_card(exprid);
+                        self.cards.push(card);
+                    }
+                },
                 Expression::Flow(_, expr_ids) => {
                     let (_, from_ids) = expr_ids.split_last().unwrap();
                     let (_, to_ids) = expr_ids.split_first().unwrap();

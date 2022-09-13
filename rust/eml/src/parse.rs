@@ -143,7 +143,10 @@ fn expression(input: &str) -> IResult<&str, Expression> {
         }
         ExpressionType::View => {
             let (newinput, (exprid, rawlines)) = tuple((expression_id, raw_block))(rest)?;
-            Ok((newinput, Expression::View(exprid, rawlines)))
+            Ok((
+                newinput,
+                Expression::View(exprid, Body::TableBody(rawlines)),
+            ))
         }
         ExpressionType::Flow => {
             let (newinput, ids) = preceded(space0, flow_block)(rest)?;
@@ -283,10 +286,13 @@ mod tests {
 
     #[test]
     fn test_parse_body_02() {
-        let input = "form FooForm {}";
+        let input = "form FooForm { foo:bar}";
         let expected = vec![Expression::Form(
             ExpressionId("FooForm".to_string()),
-            vec![],
+            vec![Field::Text(TextField {
+                name: "foo".to_string(),
+                data: "bar".to_string(),
+            })],
         )];
         let (_, observed) = expressions(input).unwrap();
         assert_eq!(expected, observed)
