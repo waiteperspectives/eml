@@ -23,14 +23,14 @@ fn eml_prefix(input: &str) -> IResult<&str, EmlPrefix> {
     let hash = tag("#");
     let eml = tag("eml");
     let colon = tag(":");
-    let (newinput, _) = tuple((hash, space0, eml, colon, space0))(input)?;
-    Ok((newinput, EmlPrefix {}))
+    let (rest, _) = tuple((hash, space0, eml, colon, space0))(input)?;
+    Ok((rest, EmlPrefix {}))
 }
 
 fn eml_version(input: &str) -> IResult<&str, Version> {
     let version_info = tuple((parse_u32, tag("."), parse_u32, tag("."), parse_u32));
-    let (newinput, (major, _, minor, _, fix)) = preceded(eml_prefix, version_info)(input)?;
-    Ok((newinput, Version { major, minor, fix }))
+    let (rest, (major, _, minor, _, fix)) = preceded(eml_prefix, version_info)(input)?;
+    Ok((rest, Version { major, minor, fix }))
 }
 
 // parse expressions
@@ -47,11 +47,11 @@ fn textfield_value(input: &str) -> IResult<&str, &str> {
 }
 
 fn textfield(input: &str) -> IResult<&str, Field> {
-    let (dedented_input, _) = space0(input)?;
-    let (input_without_textfield_id, id) = textfield_key(dedented_input)?;
-    let (newinput, text) = textfield_value(input_without_textfield_id)?;
+    let (rest, _) = space0(input)?;
+    let (rest, id) = textfield_key(rest)?;
+    let (rest, text) = textfield_value(rest)?;
     Ok((
-        newinput,
+        rest,
         Field::Text(TextField {
             name: id.to_string(),
             data: text.to_string(),
@@ -75,12 +75,12 @@ fn fields_block(input: &str) -> IResult<&str, Body> {
 fn raw_block(input: &str) -> IResult<&str, Body> {
     let block_begin = terminated(tag("{"), space0);
     let block_end = preceded(space0, tag("}"));
-    let (newinput, raw) = delimited(block_begin, take_until("}"), block_end)(input)?;
+    let (rest, raw) = delimited(block_begin, take_until("}"), block_end)(input)?;
     let rawlines = raw
         .split("\n")
         .map(|x| x.trim_start().to_string())
         .collect::<Vec<String>>();
-    Ok((newinput, Body::TableBody(rawlines)))
+    Ok((rest, Body::TableBody(rawlines)))
 }
 
 fn use_block(input: &str) -> IResult<&str, Body> {
@@ -101,20 +101,20 @@ fn expression_type(input: &str) -> IResult<&str, ExpressionType> {
         tag("flow"),
     ))(input)
     {
-        Ok((newinput, "form")) => Ok((newinput, ExpressionType::Form)),
-        Ok((newinput, "job")) => Ok((newinput, ExpressionType::Job)),
-        Ok((newinput, "command")) => Ok((newinput, ExpressionType::Command)),
-        Ok((newinput, "event")) => Ok((newinput, ExpressionType::Event)),
-        Ok((newinput, "view")) => Ok((newinput, ExpressionType::View)),
-        Ok((newinput, "flow")) => Ok((newinput, ExpressionType::Flow)),
+        Ok((rest, "form")) => Ok((rest, ExpressionType::Form)),
+        Ok((rest, "job")) => Ok((rest, ExpressionType::Job)),
+        Ok((rest, "command")) => Ok((rest, ExpressionType::Command)),
+        Ok((rest, "event")) => Ok((rest, ExpressionType::Event)),
+        Ok((rest, "view")) => Ok((rest, ExpressionType::View)),
+        Ok((rest, "flow")) => Ok((rest, ExpressionType::Flow)),
         Ok((_, _)) => panic!("unreachable destination"), // TODO: return error
         Err(e) => Err(e),
     }
 }
 
 fn expression_id(input: &str) -> IResult<&str, ExpressionId> {
-    let (newinput, (_, id, _)) = tuple((space1, alpha1, space1))(input)?;
-    Ok((newinput, ExpressionId(id.to_string())))
+    let (rest, (_, id, _)) = tuple((space1, alpha1, space1))(input)?;
+    Ok((rest, ExpressionId(id.to_string())))
 }
 
 fn flow_block(input: &str) -> IResult<&str, Vec<ExpressionId>> {
@@ -122,48 +122,47 @@ fn flow_block(input: &str) -> IResult<&str, Vec<ExpressionId>> {
     let block_end = preceded(space0, tag("}"));
     let expression = preceded(space0, alpha1);
     let arrow = preceded(space0, tag("=>"));
-    let (newinput, ids) =
-        delimited(block_begin, separated_list0(arrow, expression), block_end)(input)?;
+    let (rest, ids) = delimited(block_begin, separated_list0(arrow, expression), block_end)(input)?;
     let expressions = ids
         .iter()
         .map(|id| ExpressionId(id.to_string()))
         .collect::<Vec<ExpressionId>>();
-    Ok((newinput, expressions))
+    Ok((rest, expressions))
 }
 
 fn identified_block(input: &str) -> IResult<&str, (ExpressionId, Body)> {
-    let (more, exprid) = expression_id(input)?;
-    let (newinput, body) = alt((use_block, fields_block, raw_block))(more)?;
-    Ok((newinput, (exprid, body)))
+    let (rest, exprid) = expression_id(input)?;
+    let (rest, body) = alt((use_block, fields_block, raw_block))(rest)?;
+    Ok((rest, (exprid, body)))
 }
 
 fn expression(input: &str) -> IResult<&str, Expression> {
     let (rest, exprtyp) = expression_type(input)?;
     match exprtyp {
         ExpressionType::Form => {
-            let (newinput, (exprid, body)) = identified_block(rest)?;
-            Ok((newinput, Expression::Form(exprid, body)))
+            let (rest, (exprid, body)) = identified_block(rest)?;
+            Ok((rest, Expression::Form(exprid, body)))
         }
         ExpressionType::Job => {
-            let (newinput, (exprid, body)) = identified_block(rest)?;
-            Ok((newinput, Expression::Job(exprid, body)))
+            let (rest, (exprid, body)) = identified_block(rest)?;
+            Ok((rest, Expression::Job(exprid, body)))
         }
         ExpressionType::Command => {
-            let (newinput, (exprid, body)) = identified_block(rest)?;
-            Ok((newinput, Expression::Command(exprid, body)))
+            let (rest, (exprid, body)) = identified_block(rest)?;
+            Ok((rest, Expression::Command(exprid, body)))
         }
         ExpressionType::Event => {
-            let (newinput, (exprid, body)) = identified_block(rest)?;
-            Ok((newinput, Expression::Event(exprid, body)))
+            let (rest, (exprid, body)) = identified_block(rest)?;
+            Ok((rest, Expression::Event(exprid, body)))
         }
         ExpressionType::View => {
-            let (newinput, (exprid, body)) = identified_block(rest)?;
-            Ok((newinput, Expression::View(exprid, body)))
+            let (rest, (exprid, body)) = identified_block(rest)?;
+            Ok((rest, Expression::View(exprid, body)))
         }
         ExpressionType::Flow => {
-            let (newinput, ids) = preceded(space0, flow_block)(rest)?;
+            let (rest, ids) = preceded(space0, flow_block)(rest)?;
             let exprid = ExpressionId(newid());
-            Ok((newinput, Expression::Flow(exprid, ids)))
+            Ok((rest, Expression::Flow(exprid, ids)))
         }
     }
 }
@@ -176,14 +175,14 @@ fn expressions(input: &str) -> IResult<&str, Vec<Expression>> {
 }
 
 pub fn parse(input: &str) -> Result<EventModel, String> {
-    let (body, _version) = match eml_version(input) {
-        Ok((body, version)) => (body, version),
+    let (rest, _version) = match eml_version(input) {
+        Ok((rest, version)) => (rest, version),
         _ => return Err("bad version".to_string()),
     };
 
     let mut parser = preceded(many0(line_ending), expressions);
 
-    match parser(body) {
+    match parser(rest) {
         Ok((_, expressions)) => Ok(EventModel { expressions }),
         Err(e) => Err(e.to_string()),
     }
