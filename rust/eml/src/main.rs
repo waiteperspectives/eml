@@ -6,8 +6,10 @@ mod utils;
 
 use clap::Parser;
 use parse::parse;
+use std::error::Error;
 use std::fs::File;
 use std::io;
+use std::path::Path;
 use svg::*;
 use utils::newid;
 
@@ -17,9 +19,13 @@ struct Args {
     /// eml input: either stdin or filepath
     #[clap(value_parser, default_value = "-")]
     input: String,
+
+    /// eml output: either stdout or filepath
+    #[clap(value_parser, default_value = "-")]
+    output: String,
 }
 
-fn read_input(input: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn read_input(input: &str) -> Result<String, Box<dyn Error>> {
     let mut buf = String::new();
     let mut rdr: Box<dyn io::Read> = match input {
         "-" => Box::new(io::stdin()),
@@ -29,7 +35,16 @@ fn read_input(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     Ok(buf)
 }
 
-fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn write_output(output: &str, target: &str) -> Result<(), Box<dyn Error>> {
+    let mut writer: Box<dyn io::Write> = match target {
+        "-" => Box::new(io::stdout()),
+        _ => Box::new(File::create(&Path::new(target))?),
+    };
+    writer.write(output.as_bytes())?;
+    Ok(())
+}
+
+fn process(input: &str) -> Result<String, Box<dyn Error>> {
     let mut doc = SvgDocument {
         id: newid(),
         width: 1000f64,
@@ -50,10 +65,10 @@ fn process(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     Ok(svg_string)
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
     let input = read_input(args.input.as_str())?;
     let output = process(&input)?;
-    println!("{}", output);
+    write_output(&output, args.output.as_str())?;
     Ok(())
 }
