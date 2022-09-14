@@ -1,68 +1,43 @@
 # eml: 0.0.1
 
+# Customer Entry
+# -------------------------
 form CustomerForm {
-    name: Bob
-    age: 21
-    email: bob@example.com
+  Name: John
+  Age: 21
+  Email: jdoe@example.com
 }
 
-# A comment
-command AddCustomer {use CustomerForm}
-
+command AddCustomer { use CustomerForm }
 event CustomerAdded { use CustomerForm }
-
-# Another comment
-# Comments can be intermixed with expressions
-# But not inside expressions!
 flow { CustomerForm => AddCustomer => CustomerAdded }
 
+# Account Addition
+# -------------------------
 view AccountsToAdd {
-  | CustomerId | state  |
-  |------------|--------|
-  | 123        | done   |
-  | 456        | todo   |
-  | 789        | todo   |
+  |   CustomerId | State   |
+  |--------------|---------|
+  |          123 | DONE    |
+  |          456 | TODO    |
 }
-flow { CustomerAdded => AccountsToAdd }
-
-view DemoTodo { use AccountsToAdd }
-flow { CustomerAdded => DemoTodo }
-
-
 job ProcessAccountsToAdd {}
-
 command AddAccount {
-    CustomerId: 123
-    Name: Bob
+  CustomerId: 456
+  Name: John
 }
+event AccountAdded { use AddAccount }
+flow { CustomerAdded => AccountsToAdd => ProcessAccountsToAdd => AddAccount => AccountAdded }
 
-event AccountAdded {
-    CustomerId: 123
-    Name: Bob
-}
-
-flow { AccountsToAdd => ProcessAccountsToAdd => AddAccount => AccountAdded }
-
+# Account Addition
+# -------------------------
 view UsersToAdd {
-  | CustomerId | state  |
-  |------------|--------|
-  | 123        | done   |
-  | 456        | todo   |
-  | 789        | todo   |
+  |   CustomerId | State   |
+  |--------------|---------|
+  |          123 | DONE    |
+  |          456 | TODO    |
 }
-
 job ProcessUsersToAdd {}
-
-command AddUser {
-    Name: Bob
-    Login: Bob
-}
-
-event UserAdded {
-    Name: Bob
-    Login: Bob
-}
-
-flow { CustomerAdded => UsersToAdd }
-flow { UsersToAdd => ProcessUsersToAdd => AddUser => UserAdded }
+command AddUser { Name: John, Login: john }
+event UserAdded { use AddUser }
+flow { CustomerAdded => UsersToAdd => ProcessUsersToAdd => AddUser => UserAdded }
 
