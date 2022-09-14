@@ -184,7 +184,7 @@ pub fn parse(input: &str) -> Result<EventModel, String> {
         _ => return Err("bad version".to_string()),
     };
 
-    let mut parser = preceded(many0(line_ending), expressions);
+    let mut parser = preceded(many0(alt((line_ending, comment))), expressions);
 
     match parser(rest) {
         Ok((_, expressions)) => Ok(EventModel { expressions }),
