@@ -6,10 +6,14 @@ form CustomerForm {
     email: bob@example.com
 }
 
+# A comment
 command AddCustomer {use CustomerForm}
 
 event CustomerAdded { use CustomerForm }
 
+# Another comment
+# Comments can be intermixed with expressions
+# But not inside expressions!
 flow { CustomerForm => AddCustomer => CustomerAdded }
 
 view AccountsToAdd {
