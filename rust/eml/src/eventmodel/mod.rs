@@ -8,12 +8,6 @@ pub struct TextField {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct TextSeries {
-    pub name: String,
-    pub data: Vec<String>,
-}
-
-#[derive(Debug, PartialEq)]
 pub enum Field {
     Text(TextField),
 }
