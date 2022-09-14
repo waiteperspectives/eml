@@ -107,7 +107,7 @@ fn expression_type(input: &str) -> IResult<&str, ExpressionType> {
         Ok((rest, "event")) => Ok((rest, ExpressionType::Event)),
         Ok((rest, "view")) => Ok((rest, ExpressionType::View)),
         Ok((rest, "flow")) => Ok((rest, ExpressionType::Flow)),
-        Ok((_, _)) => panic!("unreachable destination"), // TODO: return error
+        Ok((_, _)) => unreachable!(), // best option available?
         Err(e) => Err(e),
     }
 }
