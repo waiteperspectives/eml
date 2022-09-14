@@ -131,7 +131,7 @@ fn flow_block(input: &str) -> IResult<&str, Vec<ExpressionId>> {
     Ok((newinput, expressions))
 }
 
-fn block(input: &str) -> IResult<&str, (ExpressionId, Body)> {
+fn identified_block(input: &str) -> IResult<&str, (ExpressionId, Body)> {
     let (more, exprid) = expression_id(input)?;
     let (newinput, body) = alt((use_block, fields_block, raw_block))(more)?;
     Ok((newinput, (exprid, body)))
@@ -141,23 +141,23 @@ fn expression(input: &str) -> IResult<&str, Expression> {
     let (rest, exprtyp) = expression_type(input)?;
     match exprtyp {
         ExpressionType::Form => {
-            let (newinput, (exprid, body)) = block(rest)?;
+            let (newinput, (exprid, body)) = identified_block(rest)?;
             Ok((newinput, Expression::Form(exprid, body)))
         }
         ExpressionType::Job => {
-            let (newinput, (exprid, body)) = block(rest)?;
+            let (newinput, (exprid, body)) = identified_block(rest)?;
             Ok((newinput, Expression::Job(exprid, body)))
         }
         ExpressionType::Command => {
-            let (newinput, (exprid, body)) = block(rest)?;
+            let (newinput, (exprid, body)) = identified_block(rest)?;
             Ok((newinput, Expression::Command(exprid, body)))
         }
         ExpressionType::Event => {
-            let (newinput, (exprid, body)) = block(rest)?;
+            let (newinput, (exprid, body)) = identified_block(rest)?;
             Ok((newinput, Expression::Event(exprid, body)))
         }
         ExpressionType::View => {
-            let (newinput, (exprid, body)) = block(rest)?;
+            let (newinput, (exprid, body)) = identified_block(rest)?;
             Ok((newinput, Expression::View(exprid, body)))
         }
         ExpressionType::Flow => {
@@ -286,6 +286,42 @@ mod tests {
     }
 
     #[test]
+    fn test_flow_block() {
+        let input = "{Foo =>Bar => Baz }";
+        let expected = vec![
+            ExpressionId("Foo".to_string()),
+            ExpressionId("Bar".to_string()),
+            ExpressionId("Baz".to_string()),
+        ];
+        let (_, observed) = flow_block(input).unwrap();
+        assert_eq!(expected, observed);
+    }
+
+    #[test]
+    fn test_use_block_01() {
+        let input = "{ use FooBar}";
+        let expected = Body::UseBody(ExpressionId("FooBar".to_string()));
+        let (_, observed) = use_block(input).unwrap();
+        assert_eq!(expected, observed)
+    }
+
+    #[test]
+    fn test_use_block_02() {
+        let input = "{use FooBar}";
+        let expected = Body::UseBody(ExpressionId("FooBar".to_string()));
+        let (_, observed) = use_block(input).unwrap();
+        assert_eq!(expected, observed)
+    }
+
+    #[test]
+    fn test_use_block_03() {
+        let input = "{use FooBar }";
+        let expected = Body::UseBody(ExpressionId("FooBar".to_string()));
+        let (_, observed) = use_block(input).unwrap();
+        assert_eq!(expected, observed)
+    }
+
+    #[test]
     fn test_parse_body_01() {
         let input = "form FooForm {}";
         let expected = vec![Expression::Form(
@@ -342,14 +378,54 @@ mod tests {
     }
 
     #[test]
-    fn test_flow_block() {
-        let input = "{Foo =>Bar => Baz }";
+    fn test_parse_body_04() {
+        let input = indoc! {r#"
+            form FooForm {
+                foo: bar
+            }
+            command AddBar { use FooForm}
+        "#};
         let expected = vec![
-            ExpressionId("Foo".to_string()),
-            ExpressionId("Bar".to_string()),
-            ExpressionId("Baz".to_string()),
+            Expression::Form(
+                ExpressionId("FooForm".to_string()),
+                Body::FieldBody(vec![Field::Text(TextField {
+                    name: "foo".to_string(),
+                    data: "bar".to_string(),
+                })]),
+            ),
+            Expression::Command(
+                ExpressionId("AddBar".to_string()),
+                Body::UseBody(ExpressionId("FooForm".to_string())),
+            ),
         ];
-        let (_, observed) = flow_block(input).unwrap();
-        assert_eq!(expected, observed);
+        let (_, observed) = expressions(input).unwrap();
+        assert_eq!(expected, observed)
+    }
+
+    #[test]
+    fn test_parse_body_05() {
+        let input = indoc! {r#"
+            view TodoList {
+              | CustomerId | state  |
+              |------------|--------|
+              | 123        | done   |
+              | 456        | todo   |
+              | 789        | todo   |
+            }
+        "#};
+        let expected = vec![Expression::View(
+            ExpressionId("TodoList".to_string()),
+            Body::TableBody(vec![
+                "".to_string(),
+                "| CustomerId | state  |".to_string(),
+                "|------------|--------|".to_string(),
+                "| 123        | done   |".to_string(),
+                "| 456        | todo   |".to_string(),
+                "| 789        | todo   |".to_string(),
+                "".to_string(),
+            ]),
+        )];
+        let (_, observed) = expressions(input).unwrap();
+        assert_eq!(expected, observed)
     }
 }
