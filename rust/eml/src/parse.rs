@@ -167,9 +167,13 @@ fn expression(input: &str) -> IResult<&str, Expression> {
     }
 }
 
+fn comment(input: &str) -> IResult<&str, &str> {
+    delimited(tag("#"), is_not("\n"), line_ending)(input)
+}
+
 fn expressions(input: &str) -> IResult<&str, Vec<Expression>> {
     let expression_parser = expression;
-    let delimiter = many1(line_ending);
+    let delimiter = many1(alt((comment, line_ending)));
     let (rest, expressions) = separated_list0(delimiter, expression_parser)(input)?;
     Ok((rest, expressions))
 }
